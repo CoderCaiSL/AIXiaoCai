@@ -150,7 +150,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             if (params.contains("\"nlu_result\"")) {
                 if (length > 0 && data.length > 0) {
                     logTxt += ", 语义解析结果：" + new String(data, offset, length);
-                    BaiduEnity baiduEnity2 = gson.fromJson(new String(data, offset, length),BaiduEnity.class);
                 }
             }
         } else if (data != null) {
