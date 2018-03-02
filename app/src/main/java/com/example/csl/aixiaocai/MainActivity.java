@@ -2,10 +2,10 @@ package com.example.csl.aixiaocai;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
+import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -15,6 +15,8 @@ import com.baidu.speech.EventListener;
 import com.baidu.speech.EventManager;
 import com.baidu.speech.EventManagerFactory;
 import com.baidu.speech.asr.SpeechConstant;
+import com.example.csl.aixiaocai.enity.BaiduEnity;
+import com.google.gson.Gson;
 
 import org.json.JSONObject;
 
@@ -28,6 +30,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected Button btn;
     protected Button stopBtn;
     protected Button btnTwo;
+    protected Button btnWakeUp;
+    protected Button btnSet;
     private static String DESC_TEXT = "精简版识别，带有SDK唤醒运行的最少代码，仅仅展示如何调用，\n" +
             "也可以用来反馈测试SDK输入参数及输出回调。\n" +
             "本示例需要自行根据文档填写参数，可以使用之前识别示例中的日志中的参数。\n" +
@@ -38,7 +42,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
 
     private boolean logTime = true;
 
-    private boolean enableOffline = false; // 测试离线命令词，需要改成true
+    private boolean enableOffline = true; // 测试离线命令词，需要改成true
     /**
      * 测试参数填在这里
      */
@@ -53,12 +57,15 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         }
         params.put(SpeechConstant.ACCEPT_AUDIO_VOLUME, false);
         // params.put(SpeechConstant.NLU, "enable");
-        // params.put(SpeechConstant.VAD_ENDPOINT_TIMEOUT, 0); // 长语音
+        params.put(SpeechConstant.VAD_ENDPOINT_TIMEOUT, 0); // 长语音
         // params.put(SpeechConstant.IN_FILE, "res:///com/baidu/android/voicedemo/16k_test.pcm");
         // params.put(SpeechConstant.VAD, SpeechConstant.VAD_DNN);
         // params.put(SpeechConstant.PROP ,20000);
         // params.put(SpeechConstant.PID, 1537); // 中文输入法模型，有逗号
         // 请先使用如‘在线识别’界面测试和生成识别参数。 params同ActivityRecog类中myRecognizer.start(params);
+        //唤醒功能
+        params.put(SpeechConstant.WP_WORDS_FILE, "assets:///WakeUp.bin");
+        params.put(SpeechConstant.PID,19361);//普通话远场景模型
         String json = null; // 可以替换成自己的json
         json = new JSONObject(params).toString(); // 这里可以替换成你需要测试的json
         asr.send(event, json, null, 0, 0);
@@ -93,7 +100,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             }
         });
         stopBtn.setOnClickListener(new View.OnClickListener() {
-
             @Override
             public void onClick(View v) {
                 stop();
@@ -103,6 +109,18 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             @Override
             public void onClick(View v) {
                 SecondActivity.ActionStart(MainActivity.this);
+            }
+        });
+        btnSet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ActivityAllRecog.ActionStart(MainActivity.this);
+            }
+        });
+        btnWakeUp.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ActivityWakeUpRecog.ActionStart(MainActivity.this);
             }
         });
         if (enableOffline) {
@@ -117,7 +135,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             unloadOfflineEngine(); // 测试离线命令词请开启, 测试 ASR_OFFLINE_ENGINE_GRAMMER_FILE_PATH 参数时开启
         }
     }
-
     //   EventListener  回调方法
     @Override
     public void onEvent(String name, String params, byte[] data, int offset, int length) {
@@ -127,10 +144,13 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         if (params != null && !params.isEmpty()) {
             logTxt += " ;params :" + params;
         }
+        Gson gson = new Gson();
+        BaiduEnity baiduEnity = gson.fromJson(params,BaiduEnity.class);
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_PARTIAL)) {
             if (params.contains("\"nlu_result\"")) {
                 if (length > 0 && data.length > 0) {
                     logTxt += ", 语义解析结果：" + new String(data, offset, length);
+                    BaiduEnity baiduEnity2 = gson.fromJson(new String(data, offset, length),BaiduEnity.class);
                 }
             }
         } else if (data != null) {
@@ -152,6 +172,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         btn = (Button) findViewById(R.id.btn);
         btnTwo = (Button) findViewById(R.id.btnTwo);
         stopBtn = (Button) findViewById(R.id.btn_stop);
+        btnSet = (Button) findViewById(R.id.btn_set);
+        btnWakeUp = (Button) findViewById(R.id.btn_awaken);
         txtLog.setText(DESC_TEXT + "\n");
     }
     /**
@@ -183,6 +205,61 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // 此处为android 6.0以上动态授权的回调，用户自行实现。
+    }
+
+    /**
+     * 启动简单识别引擎
+     */
+    private void startASR() {
+        txtLog.setText("");
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        String event = null;
+        event = SpeechConstant.ASR_START; // 替换成测试的event
+
+        if (enableOffline) {
+            params.put(SpeechConstant.DECODER, 2);
+        }
+        params.put(SpeechConstant.ACCEPT_AUDIO_VOLUME, false);
+        // params.put(SpeechConstant.NLU, "enable");
+        params.put(SpeechConstant.VAD_ENDPOINT_TIMEOUT, 0); // 长语音
+        // params.put(SpeechConstant.IN_FILE, "res:///com/baidu/android/voicedemo/16k_test.pcm");
+        // params.put(SpeechConstant.VAD, SpeechConstant.VAD_DNN);
+        // params.put(SpeechConstant.PROP ,20000);
+        // params.put(SpeechConstant.PID, 1537); // 中文输入法模型，有逗号
+        // 请先使用如‘在线识别’界面测试和生成识别参数。 params同ActivityRecog类中myRecognizer.start(params);
+        //唤醒功能
+        params.put(SpeechConstant.PID,19361);//普通话远场景模型
+        String json = null; // 可以替换成自己的json
+        json = new JSONObject(params).toString(); // 这里可以替换成你需要测试的json
+        asr.send(event, json, null, 0, 0);
+        printLog("输入参数：" + json);
+    }
+    /**
+     * 启动唤醒识别引擎
+     */
+    private void startWakeUp() {
+        txtLog.setText("");
+        Map<String, Object> params = new LinkedHashMap<String, Object>();
+        String event = null;
+        event = SpeechConstant.ASR_START; // 替换成测试的event
+
+        if (enableOffline) {
+            params.put(SpeechConstant.DECODER, 2);
+        }
+        params.put(SpeechConstant.ACCEPT_AUDIO_VOLUME, false);
+        // params.put(SpeechConstant.NLU, "enable");
+        params.put(SpeechConstant.VAD_ENDPOINT_TIMEOUT, 0); // 长语音
+        // params.put(SpeechConstant.IN_FILE, "res:///com/baidu/android/voicedemo/16k_test.pcm");
+        // params.put(SpeechConstant.VAD, SpeechConstant.VAD_DNN);
+        // params.put(SpeechConstant.PROP ,20000);
+        // params.put(SpeechConstant.PID, 1537); // 中文输入法模型，有逗号
+        // 请先使用如‘在线识别’界面测试和生成识别参数。 params同ActivityRecog类中myRecognizer.start(params);
+        //唤醒功能
+        params.put(SpeechConstant.PID,19361);//普通话远场景模型
+        String json = null; // 可以替换成自己的json
+        json = new JSONObject(params).toString(); // 这里可以替换成你需要测试的json
+        asr.send(event, json, null, 0, 0);
+        printLog("输入参数：" + json);
     }
 
 }

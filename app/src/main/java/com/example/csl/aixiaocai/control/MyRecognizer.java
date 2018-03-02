@@ -38,7 +38,6 @@ public class MyRecognizer {
 
     /**
      * 初始化
-     *
      * @param context
      * @param recogListener 将EventListener结果做解析的DEMO回调。使用RecogEventAdapter 适配EventListener
      */
@@ -48,7 +47,6 @@ public class MyRecognizer {
 
     /**
      * 初始化 提供 EventManagerFactory需要的Context和EventListener
-     *
      * @param context
      * @param eventListener
      */
