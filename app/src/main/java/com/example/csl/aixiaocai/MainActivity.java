@@ -113,6 +113,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             @Override
             public void onClick(View v) {
                 stop();
+                btn.setText("点击开始和瓦力说话");
             }
         });
         btnTwo.setOnClickListener(new View.OnClickListener() {
@@ -157,6 +158,9 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         BaiduEnity baiduEnity;
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_SERIALNUMBER)) {
             dialog.show();
+        }
+        if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_EXIT)) {
+            dialog.dismiss();
         }
         //BaiduEnity baiduEnity = gson.fromJson(params,BaiduEnity.class);
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_PARTIAL)) {

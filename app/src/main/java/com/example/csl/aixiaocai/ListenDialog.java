@@ -34,7 +34,7 @@ public class ListenDialog extends Dialog{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         LayoutInflater mLayoutInflater = LayoutInflater.from(context);
-        View mView = mLayoutInflater.inflate(R.layout.chat_layout, null);
+        View mView = mLayoutInflater.inflate(R.layout.listen_dialog, null);
         setContentView(mView);
         imgGif = this.findViewById(R.id.imgGif);
         if (type.equals("thinking")){
