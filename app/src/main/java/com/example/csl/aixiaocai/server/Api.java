@@ -5,6 +5,6 @@ package com.example.csl.aixiaocai.server;
  */
 
 public class Api {
-    public static String url = "http://www.tuling123.com/openapi/api";
+    public static String url = "http://www.tuling123.com/";
     public static String tulingApiKey = "1bd5d266eb984c07aec359981084b935";
 }

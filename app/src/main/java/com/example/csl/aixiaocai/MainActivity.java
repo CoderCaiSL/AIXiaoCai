@@ -16,6 +16,9 @@ import com.baidu.speech.EventManager;
 import com.baidu.speech.EventManagerFactory;
 import com.baidu.speech.asr.SpeechConstant;
 import com.example.csl.aixiaocai.enity.BaiduEnity;
+import com.example.csl.aixiaocai.enity.InputTuLing;
+import com.example.csl.aixiaocai.enity.ResultTuLing;
+import com.example.csl.aixiaocai.httpRetrofitClient.InputTuLingHttp;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
@@ -23,6 +26,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+
+import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity implements EventListener {
     protected TextView txtLog;
@@ -43,10 +48,13 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     private boolean logTime = true;
 
     private boolean enableOffline = true; // 测试离线命令词，需要改成true
+
+    ListenDialog dialog ;
+
     /**
      * 测试参数填在这里
      */
-    private void start() {
+    public void start() {
         txtLog.setText("");
         Map<String, Object> params = new LinkedHashMap<String, Object>();
         String event = null;
@@ -89,6 +97,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.common_mini);
         initView();
+        dialog = new ListenDialog(MainActivity.this,"");
         initPermission();
         asr = EventManagerFactory.create(this, "asr");
         asr.registerListener(this); //  EventListener 中 onEvent方法
@@ -96,6 +105,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
 
             @Override
             public void onClick(View v) {
+                btn.setText("请说话。。。。");
                 start();
             }
         });
@@ -126,6 +136,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         if (enableOffline) {
             loadOfflineEngine(); // 测试离线命令词请开启, 测试 ASR_OFFLINE_ENGINE_GRAMMER_FILE_PATH 参数时开启
         }
+
     }
     @Override
     protected void onDestroy() {
@@ -139,23 +150,29 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     @Override
     public void onEvent(String name, String params, byte[] data, int offset, int length) {
         String logTxt = "name: " + name;
-
-
         if (params != null && !params.isEmpty()) {
             logTxt += " ;params :" + params;
         }
         Gson gson = new Gson();
-        BaiduEnity baiduEnity = gson.fromJson(params,BaiduEnity.class);
+        BaiduEnity baiduEnity;
+        if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_SERIALNUMBER)) {
+            dialog.show();
+        }
+        //BaiduEnity baiduEnity = gson.fromJson(params,BaiduEnity.class);
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_PARTIAL)) {
             if (params.contains("\"nlu_result\"")) {
                 if (length > 0 && data.length > 0) {
+                    String text = new String(data, offset, length);
                     logTxt += ", 语义解析结果：" + new String(data, offset, length);
+                    dialog.dismiss();
+                    baiduEnity = gson.fromJson(text,BaiduEnity.class);
+                    ChatToTuLing(baiduEnity.getMerged_res().getSemantic_form().getRaw_text());
                 }
             }
         } else if (data != null) {
             logTxt += " ;data length=" + data.length;
         }
-        printLog(logTxt);
+         printLog(logTxt);
     }
     private void printLog(String text) {
         if (logTime) {
@@ -182,8 +199,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         String permissions[] = {Manifest.permission.RECORD_AUDIO,
                 Manifest.permission.ACCESS_NETWORK_STATE,
                 Manifest.permission.INTERNET,
+                Manifest.permission.MODIFY_AUDIO_SETTINGS,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_SETTINGS,
                 Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
+                Manifest.permission.ACCESS_WIFI_STATE,
+                Manifest.permission.CHANGE_WIFI_STATE
         };
 
         ArrayList<String> toApplyList = new ArrayList<String>();
@@ -259,6 +280,61 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         json = new JSONObject(params).toString(); // 这里可以替换成你需要测试的json
         asr.send(event, json, null, 0, 0);
         printLog("输入参数：" + json);
+    }
+
+    /**
+     * 与图灵聊天
+     */
+    public void ChatToTuLing(String text){
+        dialog.setImgGif("thinking");
+        InputTuLingHttp inputTuLingHttp = new InputTuLingHttp();
+        InputTuLing inputTuLing = new InputTuLing();
+        InputTuLing.UserInfoBean userInfoBean = new InputTuLing.UserInfoBean();
+        InputTuLing.PerceptionBean perceptionBean = new InputTuLing.PerceptionBean();
+        InputTuLing.PerceptionBean.InputTextBean inputTextBean = new InputTuLing.PerceptionBean.InputTextBean();
+        inputTextBean.setText(text);
+        userInfoBean.setApiKey("1bd5d266eb984c07aec359981084b935");
+        userInfoBean.setUserId("androidAi");
+        inputTuLing.setReqType(0);
+        inputTuLing.setUserInfo(userInfoBean);
+        perceptionBean.setInputText(inputTextBean);
+        inputTuLing.setPerception(perceptionBean);
+        inputTuLingHttp.InputTuLingText(inputTuLing);
+        inputTuLingHttp.setGetRetrofitListener(new InputTuLingHttp.GetRetrofitListener() {
+            @Override
+            public void getResultSuccess(Response<ResultTuLing> response) {
+                //获取成功
+                if (response.code() == 200){
+                    //语音播放
+                    ResultTuLing resultTuLing = response.body();
+                    for (ResultTuLing.ResultsBean enity : resultTuLing.getResults()){
+                        if (enity.getResultType().equals("text")){
+                            Log.e("获取",enity.getValues().getText());
+                            dialog.dismiss();
+                            ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
+                            chatDialog.setTitle("语音播放ing。。。。");
+                            chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
+                                @Override
+                                public void setOnDimss() {
+                                    start();
+                                }
+                            });
+                            stop();
+                            chatDialog.show();
+
+                        }
+                    }
+                }else {
+                    //语音播放
+                    Log.e("获取",response.code()+""+response.raw()+"");
+                }
+            }
+            @Override
+            public void getResultFailure(String message) {
+                //获取失败
+                Log.e("输出",message);
+            }
+        });
     }
 
 }

@@ -26,7 +26,7 @@ public class InputTuLingHttp {
         call.enqueue(new Callback<ResultTuLing>() {
             @Override
             public void onResponse(Call<ResultTuLing> call, Response<ResultTuLing> response) {
-                getRetrofitListener.getResultSuccess(response.body());
+                getRetrofitListener.getResultSuccess(response);
             }
             @Override
             public void onFailure(Call<ResultTuLing> call, Throwable t) {
@@ -36,7 +36,7 @@ public class InputTuLingHttp {
     }
 
     public interface GetRetrofitListener{
-        void getResultSuccess(ResultTuLing resultTuLing);
+        void getResultSuccess(Response<ResultTuLing> response);
         void getResultFailure(String message);
     }
 

@@ -1,26 +1,26 @@
 package com.example.csl.aixiaocai;
 
-import android.Manifest;
+import android.app.Dialog;
 import android.content.Context;
-import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.baidu.tts.auth.AuthInfo;
 import com.baidu.tts.chainofresponsibility.logger.LoggerProxy;
+import com.baidu.tts.client.SpeechError;
 import com.baidu.tts.client.SpeechSynthesizer;
 import com.baidu.tts.client.SpeechSynthesizerListener;
 import com.baidu.tts.client.TtsMode;
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
 import com.example.csl.aixiaocai.control.InitConfig;
 import com.example.csl.aixiaocai.listener.UiMessageListener;
 import com.example.csl.aixiaocai.util.AutoCheck;
@@ -28,17 +28,16 @@ import com.example.csl.aixiaocai.util.OfflineResource;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by csl on 2018/3/1.
+ * Created by csl on 2018/3/3.
  */
 
-public class SecondActivity extends AppCompatActivity {
+public class ChatDialog extends Dialog {
 
-    private static final String TEXT = "你好，我是小蔡！欢迎使用智能app";
+    private String TEXT = "你好，我是小蔡！欢迎使用智能app";
 
     // ================== 初始化参数设置开始 ==========================
     /**
@@ -72,12 +71,11 @@ public class SecondActivity extends AppCompatActivity {
     protected SpeechSynthesizer mSpeechSynthesizer;
 
     // =========== 以下为UI部分 ==================================================
-
+    private TextView mShowText;
     private Button mSpeak;
 
     private Button mStop;
-
-    private TextView mShowText;
+    private ImageView imgGif;
 
     protected Handler mainHandler;
 
@@ -88,22 +86,38 @@ public class SecondActivity extends AppCompatActivity {
             + "完整的SDK调用方式可以参见MainActivity\n\n";
 
 
-    private static final String TAG = "SecondActivity";
+    private static final String TAG = "ChatDialog";
+    private Context context;
+    public ChatDialog(Context context,String text) {
+        super(context);
+        this.context = context;
+        this.TEXT = text;
+    }
+
+    public ChatDialog(Context context, int themeResId,String text) {
+        super(context, themeResId);
+        this.context = context;
+        this.TEXT = text;
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_mini);
+        LayoutInflater mLayoutInflater = LayoutInflater.from(context);
+        View mView = mLayoutInflater.inflate(R.layout.chat_layout, null);
+        setContentView(mView);
+        mShowText = mView.findViewById(R.id.showText);
         offlineResource = createOfflineResource(offlineVoice);
         initView();
-        initPermission();
         initTTs();
+        speak();
+
     }
     //复制声源文件
     protected OfflineResource createOfflineResource(String voiceType) {
         OfflineResource offlineResource = null;
         try {
-            offlineResource = new OfflineResource(this, voiceType);
+            offlineResource = new OfflineResource(context, voiceType);
         } catch (IOException e) {
             // IO 错误自行处理
             e.printStackTrace();
@@ -111,15 +125,6 @@ public class SecondActivity extends AppCompatActivity {
         }
         return offlineResource;
     }
-    /**
-     * 初始化
-     * @param context
-     */
-    public static void ActionStart(Context context){
-        Intent intent = new Intent(context,SecondActivity.class);
-        context.startActivity(intent);
-    }
-
     /**
      * 注意此处为了说明流程，故意在UI线程中调用。
      * 实际集成中，该方法一定在新线程中调用，并且该线程不能结束。具体可以参考NonBlockSyntherizer的写法
@@ -140,10 +145,47 @@ public class SecondActivity extends AppCompatActivity {
         // 日志更新在UI中，可以换成MessageListener，在logcat中查看日志
         SpeechSynthesizerListener listener = new UiMessageListener(mainHandler);
 
-        // 1. 获取实例
-        mSpeechSynthesizer = SpeechSynthesizer.getInstance();
-        mSpeechSynthesizer.setContext(this);
 
+
+                // 1. 获取实例
+        mSpeechSynthesizer = SpeechSynthesizer.getInstance();
+        mSpeechSynthesizer.setContext(context);
+
+        SpeechSynthesizerListener listenerNew = new SpeechSynthesizerListener() {
+            @Override
+            public void onSynthesizeStart(String s) {
+
+            }
+
+            @Override
+            public void onSynthesizeDataArrived(String s, byte[] bytes, int i) {
+
+            }
+
+            @Override
+            public void onSynthesizeFinish(String s) {
+
+            }
+
+            @Override
+            public void onSpeechStart(String s) {
+                Glide.with(context).load(R.drawable.chat).into(new GlideDrawableImageViewTarget(imgGif));
+            }
+
+            @Override
+            public void onSpeechProgressChanged(String s, int i) {
+
+            }
+
+            @Override
+            public void onSpeechFinish(String s) {
+            }
+
+            @Override
+            public void onError(String s, SpeechError speechError) {
+
+            }
+        };
         // 2. 设置listener
         mSpeechSynthesizer.setSpeechSynthesizerListener(listener);
 
@@ -194,7 +236,7 @@ public class SecondActivity extends AppCompatActivity {
             params.put(SpeechSynthesizer.PARAM_TTS_SPEECH_MODEL_FILE, offlineResource.getModelFilename());
         }
         InitConfig initConfig =  new InitConfig(appId, appKey, secretKey, ttsMode, params, listener);
-        AutoCheck.getInstance(getApplicationContext()).check(initConfig, new Handler() {
+        AutoCheck.getInstance(context).check(initConfig, new Handler() {
             @Override
             /**
              * 开新线程检查，成功后回调
@@ -205,13 +247,11 @@ public class SecondActivity extends AppCompatActivity {
                     synchronized (autoCheck) {
                         String message = autoCheck.obtainDebugMessage();
                         //print(message); // 可以用下面一行替代，在logcat中查看代码
-                         Log.w("AutoCheckMessage", message);
+                        Log.w("AutoCheckMessage", message);
                     }
                 }
             }
-
         });
-
         // 6. 初始化
         result = mSpeechSynthesizer.initTts(ttsMode);
         checkResult(result, "initTts");
@@ -313,6 +353,7 @@ public class SecondActivity extends AppCompatActivity {
         mSpeak = (Button) this.findViewById(R.id.speak);
         mStop = (Button) this.findViewById(R.id.stop);
         mShowText = (TextView) this.findViewById(R.id.showText);
+        imgGif = this.findViewById(R.id.imgGif);
         mShowText.setText(DESC);
         View.OnClickListener listener = new View.OnClickListener() {
             public void onClick(View v) {
@@ -331,6 +372,7 @@ public class SecondActivity extends AppCompatActivity {
         };
         mSpeak.setOnClickListener(listener);
         mStop.setOnClickListener(listener);
+        mShowText.setText(DESC);
         mainHandler = new Handler() {
             /*
              * @param msg
@@ -340,7 +382,14 @@ public class SecondActivity extends AppCompatActivity {
                 super.handleMessage(msg);
                 if (msg.obj != null) {
                     print(msg.obj.toString());
+                    if (msg.obj.toString().contains("播放开始回调")){
+                        Glide.with(context).load(R.drawable.chat).into(new GlideDrawableImageViewTarget(imgGif));
+                    }else if (msg.obj.toString().contains("播放结束回调")){
+                        dimssListener.setOnDimss();
+                        dimss();
+                    }
                 }
+
             }
         };
     }
@@ -351,57 +400,30 @@ public class SecondActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onDestroy() {
+    public void setOnDismissListener(OnDismissListener listener) {
         if (mSpeechSynthesizer != null) {
             mSpeechSynthesizer.stop();
             mSpeechSynthesizer.release();
             mSpeechSynthesizer = null;
             print("释放资源成功");
         }
-        super.onDestroy();
+        super.setOnDismissListener(listener);
     }
+
 
     private void checkResult(int result, String method) {
         if (result != 0) {
             print("error code :" + result + " method:" + method + ", 错误码文档:http://yuyin.baidu.com/docs/tts/122 ");
         }
     }
-
-    //  下面是android 6.0以上的动态授权
-
-    /**
-     * android 6.0 以上需要动态申请权限
-     */
-    private void initPermission() {
-        String[] permissions = {
-                Manifest.permission.INTERNET,
-                Manifest.permission.ACCESS_NETWORK_STATE,
-                Manifest.permission.MODIFY_AUDIO_SETTINGS,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_SETTINGS,
-                Manifest.permission.READ_PHONE_STATE,
-                Manifest.permission.ACCESS_WIFI_STATE,
-                Manifest.permission.CHANGE_WIFI_STATE
-        };
-
-        ArrayList<String> toApplyList = new ArrayList<String>();
-
-        for (String perm : permissions) {
-            if (PackageManager.PERMISSION_GRANTED != ContextCompat.checkSelfPermission(this, perm)) {
-                toApplyList.add(perm);
-                // 进入到这里代表没有权限.
-            }
-        }
-        String[] tmpList = new String[toApplyList.size()];
-        if (!toApplyList.isEmpty()) {
-            ActivityCompat.requestPermissions(this, toApplyList.toArray(tmpList), 123);
-        }
-
+    private void dimss(){
+        this.dismiss();
     }
-
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
-        // 此处为android 6.0以上动态授权的回调，用户自行实现。
+    public interface DimssListener{
+        void setOnDimss();
+    }
+    private DimssListener dimssListener;
+    public void SetDimssListener(DimssListener dimssListener){
+        this.dimssListener = dimssListener;
     }
 }

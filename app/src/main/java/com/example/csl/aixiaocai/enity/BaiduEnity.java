@@ -9,114 +9,89 @@ import java.util.List;
 
 public class BaiduEnity {
 
+
     /**
-     * result_type : final_result
-     * best_result : 谢谢，
-     * results_recognition : ["谢谢，"]
-     * origin_result : {"result":{"word":["谢谢，"]},"sn":"12554d65-0c4d-4c2c-b32a-094ccfa428bd_s-0","err_no":0,"corpus_no":6528250973597516449}
-     * error : 0
+     * merged_res : {"semantic_form":{"appid":19361,"err_no":0,"parsed_text":"e 绅士 不 了 ， ","raw_text":"e绅士不了，","results":[]}}
      */
 
-    private String result_type;
-    private String best_result;
-    private OriginResultBean origin_result;
-    private int error;
-    private List<String> results_recognition;
+    private MergedResBean merged_res;
 
-    public String getResult_type() {
-        return result_type;
+    public MergedResBean getMerged_res() {
+        return merged_res;
     }
 
-    public void setResult_type(String result_type) {
-        this.result_type = result_type;
+    public void setMerged_res(MergedResBean merged_res) {
+        this.merged_res = merged_res;
     }
 
-    public String getBest_result() {
-        return best_result;
-    }
-
-    public void setBest_result(String best_result) {
-        this.best_result = best_result;
-    }
-
-    public OriginResultBean getOrigin_result() {
-        return origin_result;
-    }
-
-    public void setOrigin_result(OriginResultBean origin_result) {
-        this.origin_result = origin_result;
-    }
-
-    public int getError() {
-        return error;
-    }
-
-    public void setError(int error) {
-        this.error = error;
-    }
-
-    public List<String> getResults_recognition() {
-        return results_recognition;
-    }
-
-    public void setResults_recognition(List<String> results_recognition) {
-        this.results_recognition = results_recognition;
-    }
-
-    public static class OriginResultBean {
+    public static class MergedResBean {
         /**
-         * result : {"word":["谢谢，"]}
-         * sn : 12554d65-0c4d-4c2c-b32a-094ccfa428bd_s-0
-         * err_no : 0
-         * corpus_no : 6528250973597516449
+         * semantic_form : {"appid":19361,"err_no":0,"parsed_text":"e 绅士 不 了 ， ","raw_text":"e绅士不了，","results":[]}
          */
 
-        private ResultBean result;
-        private String sn;
-        private int err_no;
-        private long corpus_no;
+        private SemanticFormBean semantic_form;
 
-        public ResultBean getResult() {
-            return result;
+        public SemanticFormBean getSemantic_form() {
+            return semantic_form;
         }
 
-        public void setResult(ResultBean result) {
-            this.result = result;
+        public void setSemantic_form(SemanticFormBean semantic_form) {
+            this.semantic_form = semantic_form;
         }
 
-        public String getSn() {
-            return sn;
-        }
+        public static class SemanticFormBean {
+            /**
+             * appid : 19361
+             * err_no : 0
+             * parsed_text : e 绅士 不 了 ，
+             * raw_text : e绅士不了，
+             * results : []
+             */
 
-        public void setSn(String sn) {
-            this.sn = sn;
-        }
+            private int appid;
+            private int err_no;
+            private String parsed_text;
+            private String raw_text;
+            private List<?> results;
 
-        public int getErr_no() {
-            return err_no;
-        }
-
-        public void setErr_no(int err_no) {
-            this.err_no = err_no;
-        }
-
-        public long getCorpus_no() {
-            return corpus_no;
-        }
-
-        public void setCorpus_no(long corpus_no) {
-            this.corpus_no = corpus_no;
-        }
-
-        public static class ResultBean {
-            private List<String> word;
-
-            public List<String> getWord() {
-                return word;
+            public int getAppid() {
+                return appid;
             }
 
-            public void setWord(List<String> word) {
-                this.word = word;
+            public void setAppid(int appid) {
+                this.appid = appid;
+            }
+
+            public int getErr_no() {
+                return err_no;
+            }
+
+            public void setErr_no(int err_no) {
+                this.err_no = err_no;
+            }
+
+            public String getParsed_text() {
+                return parsed_text;
+            }
+
+            public void setParsed_text(String parsed_text) {
+                this.parsed_text = parsed_text;
+            }
+
+            public String getRaw_text() {
+                return raw_text;
+            }
+
+            public void setRaw_text(String raw_text) {
+                this.raw_text = raw_text;
+            }
+
+            public List<?> getResults() {
+                return results;
+            }
+
+            public void setResults(List<?> results) {
+                this.results = results;
             }
         }
     }

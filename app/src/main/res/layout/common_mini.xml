@@ -15,11 +15,16 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:background="#999" />
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/log"/>
 
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_above="@+id/btn"
+        android:visibility="gone"
         android:layout_weight="1">
 
         <TextView
@@ -32,6 +37,7 @@
         android:id="@+id/btn_set"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
         android:text="设置" />
@@ -41,6 +47,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
+        android:visibility="gone"
         android:text="唤醒识别" />
     <Button
         android:id="@+id/btn_stop"
@@ -55,11 +62,12 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
-        android:text="开始" />
+        android:text="点击开始和瓦力说话" />
     <Button
         android:id="@+id/btnTwo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
         android:text="语音合成" />

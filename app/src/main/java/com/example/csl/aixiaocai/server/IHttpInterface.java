@@ -15,7 +15,7 @@ import retrofit2.http.POST;
 public interface IHttpInterface {
 
     @Headers({"Content-type:application/json;charset=UTF-8"})
-    @POST("GSSSelverlet/UpateBox")
+    @POST("openapi/api/v2")
     Call<ResultTuLing> InputTuLing(@Body RequestBody route
     );
 }
