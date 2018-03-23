@@ -3,12 +3,17 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
-
+    <com.qmuiteam.qmui.widget.QMUITopBarLayout
+        android:id="@+id/topBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        />
     <TextView
         android:id="@+id/txtResult"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="8dp"
+        android:visibility="gone"
         android:textSize="18dp" />
 
     <View
@@ -37,7 +42,6 @@
         android:id="@+id/btn_set"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
         android:text="设置" />
@@ -47,7 +51,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
-        android:visibility="gone"
         android:text="唤醒识别" />
     <Button
         android:id="@+id/btn_stop"
@@ -67,7 +70,6 @@
         android:id="@+id/btnTwo"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
         android:text="语音合成" />

@@ -20,6 +20,7 @@ import com.example.csl.aixiaocai.enity.InputTuLing;
 import com.example.csl.aixiaocai.enity.ResultTuLing;
 import com.example.csl.aixiaocai.httpRetrofitClient.InputTuLingHttp;
 import com.google.gson.Gson;
+import com.qmuiteam.qmui.widget.QMUITopBar;
 
 import org.json.JSONObject;
 
@@ -37,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected Button btnTwo;
     protected Button btnWakeUp;
     protected Button btnSet;
+    protected QMUITopBar topBar;
     private static String DESC_TEXT = "精简版识别，带有SDK唤醒运行的最少代码，仅仅展示如何调用，\n" +
             "也可以用来反馈测试SDK输入参数及输出回调。\n" +
             "本示例需要自行根据文档填写参数，可以使用之前识别示例中的日志中的参数。\n" +
@@ -195,6 +197,9 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         btnSet = (Button) findViewById(R.id.btn_set);
         btnWakeUp = (Button) findViewById(R.id.btn_awaken);
         txtLog.setText(DESC_TEXT + "\n");
+        topBar = (QMUITopBar) findViewById(R.id.topBar);
+        topBar.setTitle("智能小菜");
+        topBar.setBackgroundResource(R.color.qmui_config_color_blue);
     }
     /**
      * android 6.0 以上需要动态申请权限

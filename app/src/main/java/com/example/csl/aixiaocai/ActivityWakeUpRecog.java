@@ -53,10 +53,8 @@ public class ActivityWakeUpRecog extends ActivityWakeUp implements IStatus {
     @Override
     protected void initRecog() {
         // 初始化识别引擎
-
         StatusRecogListener recogListener = new MessageStatusRecogListener(handler);
         myRecognizer = new MyRecognizer(this, recogListener);
-
         IWakeupListener listener = new RecogWakeupListener(handler);
         myWakeup = new MyWakeup(this, listener);
 
