@@ -19,6 +19,7 @@ import com.example.csl.aixiaocai.enity.BaiduEnity;
 import com.example.csl.aixiaocai.enity.InputTuLing;
 import com.example.csl.aixiaocai.enity.ResultTuLing;
 import com.example.csl.aixiaocai.httpRetrofitClient.InputTuLingHttp;
+import com.example.csl.aixiaocai.util.CustomProgressDialog;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.widget.QMUITopBar;
 
@@ -53,6 +54,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
 
     ListenDialog dialog ;
 
+    CustomProgressDialog customProgressDialog;
     /**
      * 测试参数填在这里
      */
@@ -100,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         setContentView(R.layout.common_mini);
         initView();
         dialog = new ListenDialog(MainActivity.this,"");
+        customProgressDialog =new CustomProgressDialog(MainActivity.this,"识别中....",R.drawable.myprogressframe);
         initPermission();
         asr = EventManagerFactory.create(this, "asr");
         asr.registerListener(this); //  EventListener 中 onEvent方法
@@ -159,10 +162,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         Gson gson = new Gson();
         BaiduEnity baiduEnity;
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_SERIALNUMBER)) {
-            dialog.show();
+            //dialog.show();
+            customProgressDialog.show();
         }
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_EXIT)) {
-            dialog.dismiss();
+            //dialog.dismiss();
+            customProgressDialog.dismiss();
         }
         //BaiduEnity baiduEnity = gson.fromJson(params,BaiduEnity.class);
         if (name.equals(SpeechConstant.CALLBACK_EVENT_ASR_PARTIAL)) {
@@ -295,7 +300,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
      * 与图灵聊天
      */
     public void ChatToTuLing(String text){
-        dialog.setImgGif("thinking");
+        //dialog.setImgGif("thinking");
         InputTuLingHttp inputTuLingHttp = new InputTuLingHttp();
         InputTuLing inputTuLing = new InputTuLing();
         InputTuLing.UserInfoBean userInfoBean = new InputTuLing.UserInfoBean();
@@ -319,7 +324,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                     for (ResultTuLing.ResultsBean enity : resultTuLing.getResults()){
                         if (enity.getResultType().equals("text")){
                             Log.e("获取",enity.getValues().getText());
-                            dialog.dismiss();
+                            //dialog.dismiss();
+                            customProgressDialog.dismiss();
                             ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
                             chatDialog.setTitle("语音播放ing。。。。");
                             chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
@@ -330,7 +336,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                             });
                             stop();
                             chatDialog.show();
-
                         }
                     }
                 }else {

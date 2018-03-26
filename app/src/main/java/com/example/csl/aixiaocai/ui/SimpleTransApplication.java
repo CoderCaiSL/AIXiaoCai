@@ -17,4 +17,10 @@ public class SimpleTransApplication extends Application {
     public void setDigitalDialogInput(DigitalDialogInput digitalDialogInput) {
         this.digitalDialogInput = digitalDialogInput;
     }
+
+    @Override
+    public void onCreate() {
+        super.onCreate();
+
+    }
 }

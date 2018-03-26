@@ -3,7 +3,7 @@
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="vertical">
-    <com.qmuiteam.qmui.widget.QMUITopBarLayout
+    <com.qmuiteam.qmui.widget.QMUITopBar
         android:id="@+id/topBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
