@@ -37,9 +37,9 @@ public class ListenDialog extends Dialog{
         View mView = mLayoutInflater.inflate(R.layout.listen_dialog, null);
         setContentView(mView);
         imgGif = this.findViewById(R.id.imgGif);
-        if (type.equals("thinking")){
+        /*if (type.equals("thinking")){
             Glide.with(context).load(R.drawable.chat4).into(new GlideDrawableImageViewTarget(imgGif));
-        }
+        }*/
     }
     public void setImgGif(String type){
         if (type.equals("thinking")){

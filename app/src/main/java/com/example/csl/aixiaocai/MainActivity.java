@@ -8,8 +8,12 @@ import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.PopupWindow;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.baidu.speech.EventListener;
 import com.baidu.speech.EventManager;
@@ -21,12 +25,16 @@ import com.example.csl.aixiaocai.enity.ResultTuLing;
 import com.example.csl.aixiaocai.httpRetrofitClient.InputTuLingHttp;
 import com.example.csl.aixiaocai.util.CustomProgressDialog;
 import com.google.gson.Gson;
-import com.qmuiteam.qmui.widget.QMUITopBar;
+import com.qmuiteam.qmui.util.QMUIDisplayHelper;
+import com.qmuiteam.qmui.widget.popup.QMUIListPopup;
+import com.qmuiteam.qmui.widget.popup.QMUIPopup;
 
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Response;
@@ -39,22 +47,19 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected Button btnTwo;
     protected Button btnWakeUp;
     protected Button btnSet;
-    protected QMUITopBar topBar;
-    private static String DESC_TEXT = "精简版识别，带有SDK唤醒运行的最少代码，仅仅展示如何调用，\n" +
-            "也可以用来反馈测试SDK输入参数及输出回调。\n" +
-            "本示例需要自行根据文档填写参数，可以使用之前识别示例中的日志中的参数。\n" +
-            "需要完整版请参见之前的识别示例。\n" +
-            "需要测试离线命令词识别功能可以将本类中的enableOffline改成true，首次测试离线命令词请联网使用。之后请说出“打电话给张三”";
+    private static String DESC_TEXT = "";
 
     private EventManager asr;
 
     private boolean logTime = true;
 
     private boolean enableOffline = true; // 测试离线命令词，需要改成true
+    protected int TTSLength = 512;//百度语音合成一次性合成的
 
     ListenDialog dialog ;
 
     CustomProgressDialog customProgressDialog;
+    private QMUIListPopup mListPopup;
     /**
      * 测试参数填在这里
      */
@@ -202,9 +207,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         btnSet = (Button) findViewById(R.id.btn_set);
         btnWakeUp = (Button) findViewById(R.id.btn_awaken);
         txtLog.setText(DESC_TEXT + "\n");
-        topBar = (QMUITopBar) findViewById(R.id.topBar);
-        topBar.setTitle("智能小菜");
-        topBar.setBackgroundResource(R.color.qmui_config_color_blue);
     }
     /**
      * android 6.0 以上需要动态申请权限
@@ -325,17 +327,30 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                         if (enity.getResultType().equals("text")){
                             Log.e("获取",enity.getValues().getText());
                             //dialog.dismiss();
+                            String text = enity.getValues().getText();
                             customProgressDialog.dismiss();
-                            ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
-                            chatDialog.setTitle("语音播放ing。。。。");
-                            chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
-                                @Override
-                                public void setOnDimss() {
-                                    start();
+                            if (text.length() < 512){
+                                ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
+                                chatDialog.setTitle("语音播放ing。。。。");
+                                chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
+                                    @Override
+                                    public void setOnDimss() {
+                                        start();
+                                    }
+                                });
+                                stop();
+                                chatDialog.show();
+                            }else {
+                                List<String> testList = new ArrayList<>();
+                                for (int i = 0;i < text.length() / TTSLength;i++){
+                                    if (i == text.length() / TTSLength){
+                                        testList.add(text.substring(i*(text.length() / TTSLength),
+                                                text.length()-1));
+                                    }else {
+
+                                    }
                                 }
-                            });
-                            stop();
-                            chatDialog.show();
+                            }
                         }
                     }
                 }else {
@@ -349,6 +364,41 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                 Log.e("输出",message);
             }
         });
+    }
+
+    /**
+     * 悬浮层初始化
+     */
+    private void initListPopupIfNeed() {
+        if (mListPopup == null) {
+
+            String[] listItems = new String[]{
+                    "前台语音",
+                    "后台唤醒",
+            };
+            List<String> data = new ArrayList<>();
+
+            Collections.addAll(data, listItems);
+
+            ArrayAdapter adapter = new ArrayAdapter(MainActivity.this,R.layout.simple_item, data);
+
+            mListPopup = new QMUIListPopup(MainActivity.this, QMUIPopup.DIRECTION_NONE, adapter);
+            mListPopup.create(QMUIDisplayHelper.dp2px(MainActivity.this, 250),
+                    QMUIDisplayHelper.dp2px(MainActivity.this, 200),
+                    new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                    Toast.makeText(MainActivity.this, "Item " + (i + 1), Toast.LENGTH_SHORT).show();
+                    mListPopup.dismiss();
+                }
+            });
+            mListPopup.setOnDismissListener(new PopupWindow.OnDismissListener() {
+                @Override
+                public void onDismiss() {
+                    /*mActionButton2.setText(getContext().getResources().getString(R.string.popup_list_action_button_text_show));*/
+                }
+            });
+        }
     }
 
 }

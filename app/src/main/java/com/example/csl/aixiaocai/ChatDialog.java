@@ -28,7 +28,9 @@ import com.example.csl.aixiaocai.util.OfflineResource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -49,6 +51,7 @@ public class ChatDialog extends Dialog {
     protected String appKey = "CFvmRoYwNP67Wj0BhjGguSaW";
 
     protected String secretKey = "9BvromGGGbgshaIK0vQPpoL9vUoFSo91";
+    protected int textAiLength = 512;//百度ai语音一次性合成的最大长度
 
     // TtsMode.MIX; 离在线融合，在线优先； TtsMode.ONLINE 纯在线； 没有纯离线
     private TtsMode ttsMode = TtsMode.MIX;
@@ -78,6 +81,7 @@ public class ChatDialog extends Dialog {
     private ImageView imgGif;
 
     protected Handler mainHandler;
+    List<String> textStr = new ArrayList<>();
 
     private static final String DESC = "精简版合成，仅给出示例集成合成的调用过程。可以测试离线合成功能，首次使用请联网。\n"
             + "其中initTTS方法需要在新线程调用，否则引起UI阻塞。\n"
