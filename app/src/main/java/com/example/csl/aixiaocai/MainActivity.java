@@ -1,10 +1,14 @@
 package com.example.csl.aixiaocai;
 
 import android.Manifest;
+import android.annotation.TargetApi;
+import android.content.DialogInterface;
 import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +27,8 @@ import com.example.csl.aixiaocai.enity.BaiduEnity;
 import com.example.csl.aixiaocai.enity.InputTuLing;
 import com.example.csl.aixiaocai.enity.ResultTuLing;
 import com.example.csl.aixiaocai.httpRetrofitClient.InputTuLingHttp;
+import com.example.csl.aixiaocai.util.AiUtil;
+import com.example.csl.aixiaocai.util.AiUtilText;
 import com.example.csl.aixiaocai.util.CustomProgressDialog;
 import com.google.gson.Gson;
 import com.qmuiteam.qmui.util.QMUIDisplayHelper;
@@ -37,8 +43,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import permissions.dispatcher.NeedsPermission;
+import permissions.dispatcher.OnNeverAskAgain;
+import permissions.dispatcher.OnPermissionDenied;
+import permissions.dispatcher.OnShowRationale;
+import permissions.dispatcher.PermissionRequest;
+import permissions.dispatcher.RuntimePermissions;
 import retrofit2.Response;
 
+@RuntimePermissions
 public class MainActivity extends AppCompatActivity implements EventListener {
     protected TextView txtLog;
     protected TextView txtResult;
@@ -48,6 +61,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     protected Button btnWakeUp;
     protected Button btnSet;
     private static String DESC_TEXT = "";
+    private String TTSTEXT = "";//识别出来的语句
 
     private EventManager asr;
 
@@ -60,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
 
     CustomProgressDialog customProgressDialog;
     private QMUIListPopup mListPopup;
+    private AiUtil aiUtil;
     /**
      * 测试参数填在这里
      */
@@ -110,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         customProgressDialog =new CustomProgressDialog(MainActivity.this,"识别中....",R.drawable.myprogressframe);
         initPermission();
         asr = EventManagerFactory.create(this, "asr");
+        aiUtil = new AiUtil(MainActivity.this);
         asr.registerListener(this); //  EventListener 中 onEvent方法
         btn.setOnClickListener(new View.OnClickListener() {
 
@@ -120,8 +136,11 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             }
         });
         stopBtn.setOnClickListener(new View.OnClickListener() {
+            @TargetApi(Build.VERSION_CODES.M)
             @Override
             public void onClick(View v) {
+                aiUtil.isMultiSim(MainActivity.this);
+                aiUtil.call(MainActivity.this,0,"10086");
                 stop();
                 btn.setText("点击开始和瓦力说话");
             }
@@ -182,13 +201,28 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                     logTxt += ", 语义解析结果：" + new String(data, offset, length);
                     dialog.dismiss();
                     baiduEnity = gson.fromJson(text,BaiduEnity.class);
-                    ChatToTuLing(baiduEnity.getMerged_res().getSemantic_form().getRaw_text());
+                    TTSTEXT = baiduEnity.getMerged_res().getSemantic_form().getRaw_text();
+                    switch (AiTodo(TTSTEXT)){
+                        case 1:
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                                aiUtil.callPhone(TTSTEXT);
+                            }else {
+                                MainActivityPermissionsDispatcher.callPhoneNWithPermissionCheck(MainActivity.this);
+                            }
+                            break;
+                        case 2:
+
+                            break;
+                        default:
+                            ChatToTuLing(baiduEnity.getMerged_res().getSemantic_form().getRaw_text());
+                            break;
+                    }
                 }
             }
         } else if (data != null) {
             logTxt += " ;data length=" + data.length;
         }
-         printLog(logTxt);
+        printLog(logTxt);
     }
     private void printLog(String text) {
         if (logTime) {
@@ -241,6 +275,7 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     @Override
     public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
         // 此处为android 6.0以上动态授权的回调，用户自行实现。
+        MainActivityPermissionsDispatcher.onRequestPermissionsResult(this, requestCode, grantResults);
     }
 
     /**
@@ -341,14 +376,32 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                                 stop();
                                 chatDialog.show();
                             }else {
-                                List<String> testList = new ArrayList<>();
+                                //获取的文字超出一次性合成的最大限制，进行分批处理
+                                final List<String> testList = new ArrayList<>();
                                 for (int i = 0;i < text.length() / TTSLength;i++){
                                     if (i == text.length() / TTSLength){
                                         testList.add(text.substring(i*(text.length() / TTSLength),
                                                 text.length()-1));
                                     }else {
-
+                                        testList.add(text.substring(i*(text.length() / TTSLength),
+                                                (i+1)*(text.length() / TTSLength)));
                                     }
+                                }
+                                //对拿到的信息进行分批语音合成
+                                for (int i = 0;i < testList.size();i++){
+                                    ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
+                                    chatDialog.setTitle("语音播放ing。。。。");
+                                    final int finalI = i;
+                                    chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
+                                        @Override
+                                        public void setOnDimss() {
+                                            if (finalI == testList.size()){
+                                                start();
+                                            }
+                                        }
+                                    });
+                                    stop();
+                                    chatDialog.show();
                                 }
                             }
                         }
@@ -365,7 +418,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             }
         });
     }
-
     /**
      * 悬浮层初始化
      */
@@ -401,4 +453,52 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         }
     }
 
+    /**
+     * 进行特殊指令判断
+     * @param text
+     * @return
+     */
+    protected int AiTodo(String text){
+        AiUtilText aiUtilText = new AiUtilText();
+        for (int i = 0;i < aiUtilText.CALL.length;i++){
+            if (text.contains(aiUtilText.CALL[i])){
+                return 1;
+            }
+        }
+        for (int i = 0;i < aiUtilText.MUSIC.length;i++){
+            if (text.contains(aiUtilText.MUSIC[i])){
+                return 2;
+            }
+        }
+        return 0;
+    }
+
+
+    @NeedsPermission({Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE})
+    void callPhoneN() {
+        aiUtil.callPhone(TTSTEXT);
+    }
+    @OnShowRationale({Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE})
+    void callPhoneSR(final PermissionRequest request) {
+        new AlertDialog.Builder(this)
+                .setMessage("读取相册的权限")
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //再次执行请求
+                        request.proceed();
+                    }
+                })
+                .show();
+    }
+
+    @OnPermissionDenied({Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE})
+    void callPhonePD() {
+        Toast.makeText(this, "权限被拒绝", Toast.LENGTH_SHORT).show();
+    }
+
+    @OnNeverAskAgain({Manifest.permission.READ_PHONE_STATE, Manifest.permission.CALL_PHONE})
+    void callPhoneNA() {
+        Toast.makeText(this, "不再询问", Toast.LENGTH_SHORT).show();
+    }
 }
