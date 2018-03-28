@@ -45,7 +45,7 @@ public class AiUtil {
      * 拨打电话
      */
     public void callPhone(String name){
-        if (name.contains(SIM2) && isMultiSim(context)){
+        if (isMultiSim(context) && name.contains(SIM2)){
             SIMTYPE = 1;
         }else {
             SIMTYPE = 0;
@@ -58,7 +58,7 @@ public class AiUtil {
         if (pNumber.length() > 11){
             pNumber.substring(1,pNumber.length()-1);
         }
-        if (!pNumber.equals("") && pNumber.length() == 11 ){
+        if (!pNumber.equals("")){
             call(context,SIMTYPE,pNumber);
         }else {
             Cursor cursor = context.getContentResolver().query(ContactsContract.Contacts.CONTENT_URI, null, null, null, null);
