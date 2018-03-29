@@ -76,6 +76,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
     private AiUtil aiUtil;
     private QMUITopBar topBar;
     private List<String> testList = new ArrayList<>();
+    private int listSize = 1;
+
     /**
      * 测试参数填在这里
      */
@@ -162,6 +164,12 @@ public class MainActivity extends AppCompatActivity implements EventListener {
             @Override
             public void onClick(View v) {
                 ActivityWakeUpRecog.ActionStart(MainActivity.this);
+            }
+        });
+        findViewById(R.id.btnThree).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PlayMusicActivity.startAction(MainActivity.this,"播放");
             }
         });
         if (enableOffline) {
@@ -362,6 +370,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         perceptionBean.setInputText(inputTextBean);
         inputTuLing.setPerception(perceptionBean);
         inputTuLingHttp.InputTuLingText(inputTuLing);
+        //停止识别功能
+        stop();
         inputTuLingHttp.setGetRetrofitListener(new InputTuLingHttp.GetRetrofitListener() {
             @Override
             public void getResultSuccess(Response<ResultTuLing> response) {
@@ -384,28 +394,8 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                                         start();
                                     }
                                 });
-                                stop();
                                 chatDialog.show();
                             }else {
-                                String logtest = "周杰伦（Jay　Chou），1979年1月18日出生于台湾省新北市，华语流行男歌手、演员、词曲创作人、MV及电影导演、编剧及制作人。2000年被吴宗宪发掘，发行首张个人专辑《Jay》。2001年发行专辑《范特西》。2002年在中国、新加坡、马来西亚、美国等地举办首场个人世界巡回演唱会。\n" +
-                                        "2003年登上美国《时代周刊》亚洲版封面人物。\n" +
-                                        "周杰伦的音乐融合中西方元素，风格多变，四次获得世界音乐大奖最畅销亚洲艺人。凭借专辑《Jay》、《范特西》、《叶惠美》及《跨时代》四次获得金曲奖＂最佳国语专辑＂奖，并凭借《魔杰座》、《跨时代》获得第20届和第22届金曲奖“最佳国语男歌手”奖；2014年获QQ音乐年度盛典“港台最受欢迎男歌手”及压轴大奖“最佳全能艺人”。\n" +
-                                        "2005年开始涉足影视，以电影《头文字D》获第42届台湾电影金马奖及第25届香港电影金像奖“最佳新人”奖。\n" +
-                                        "2006年起连续三年获得世界音乐大奖中国区最畅销艺人奖。\n" +
-                                        "2007年自立门户，成立JVR（杰威尔）有限公司，自编自导自演的电影《不能说的秘密》获得第44届台湾电影金马奖“年度台湾杰出电影”奖。\n" +
-                                        "2008年凭借歌曲《青花瓷》获得第19届金曲奖最佳作曲人奖。\n" +
-                                        "2009年入选美国CNN亚洲极具影响力人物；同年凭借专辑《魔杰座》获得第20届金曲奖最佳国语男歌手奖。\n" +
-                                        "2010年入选美国《Fast　Company》评出的“全球百大创意人物”。\n" +
-                                        "2011年凭借专辑《跨时代》再度获得金曲奖最佳国语男歌手奖，并且第4次获得金曲奖最佳国语专辑奖；同年主演好莱坞电影《青蜂侠》。\n" +
-                                        "2012年登福布斯中国名人榜榜首。\n" +
-                                        "2013年自编自导自演第二部电影《天台爱情》取得了不俗的票房与口碑。\n" +
-                                        "2014年加盟好莱坞电影《惊天魔盗团2》；同年发行华语乐坛首张数字音乐专辑《哎呦，不错哦》。\n" +
-                                        "娱乐圈外，周杰伦在2011年跨界担任华硕（ASUS）笔电外观设计师并入股香港文化传信集团。2012在中国内地开设真爱范特西连锁KTV。\n" +
-                                        "除了力拼自己的事业，周杰伦还热心公益慈善活动，多次向内地灾区捐款并与众多艺人募款新建希望小学。\n" +
-                                        "2015年担任《中国好声音　第四季》导师。\n" +
-                                        "2016年发行演唱会专辑《周杰伦魔天伦世界巡回演唱会》；同年推出专辑《周杰伦的床边故事》。\n" +
-                                        "2017年，确认加盟原创专业音乐节目《中国新歌声第二季》。";
-                                int tmpI = logtest.length();
                                 //获取的文字超出一次性合成的最大限制，进行分批处理
                                 int begin = 0;
                                 int end = TTSLength;
@@ -417,21 +407,26 @@ public class MainActivity extends AppCompatActivity implements EventListener {
                                     text = text.substring(end-1,text.length()-1);
                                 }
                                 //对拿到的信息进行分批语音合成
-                                for (int i = 0;i < testList.size();i++){
-                                    ChatDialog chatDialog = new ChatDialog(MainActivity.this,enity.getValues().getText());
-                                    chatDialog.setTitle("语音播放ing。。。。");
-                                    final int finalI = i;
-                                    chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
-                                        @Override
-                                        public void setOnDimss() {
-                                            if (finalI == testList.size()){
-                                                start();
-                                            }
+                                listSize = 1;
+                                final ChatDialog chatDialog = new ChatDialog(MainActivity.this,testList.get(0));
+                                chatDialog.setTitle("语音播放ing。。。。");
+                                chatDialog.SetDimssListener(new ChatDialog.DimssListener() {
+                                    @Override
+                                    public void setOnDimss() {
+                                        if (listSize == testList.size()){
+                                            //若将文字组介绍完！则继续开始识别
+                                            start();
+                                            return;
                                         }
-                                    });
-                                    stop();
-                                    chatDialog.show();
-                                }
+                                        while (listSize < testList.size()){
+                                            chatDialog.show();
+                                            chatDialog.speak(testList.get(listSize));
+                                            listSize ++;
+                                        }
+                                    }
+                                });
+                                chatDialog.show();
+
                             }
                         }
                     }

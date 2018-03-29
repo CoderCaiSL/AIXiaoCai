@@ -330,8 +330,6 @@ public class AutoCheck {
             return context.getPackageName();
         }
     }
-
-
     private static class AppInfoCheck extends Check {
         private String appId;
         private String appKey;

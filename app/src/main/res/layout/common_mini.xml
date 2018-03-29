@@ -73,4 +73,11 @@
         android:layout_alignParentBottom="true"
         android:onClick="onClick"
         android:text="语音合成" />
+    <Button
+        android:id="@+id/btnThree"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:onClick="onClick"
+        android:text="跳转界面" />
 </LinearLayout>

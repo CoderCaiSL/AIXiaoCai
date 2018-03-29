@@ -69,6 +69,7 @@
             android:screenOrientation="portrait"></activity>
         <activity android:name=".ActivityAllRecog"></activity>
         <activity android:name=".ActivityWakeUpRecog"></activity>
+        <activity android:name=".PlayMusicActivity"/>
     </application>
 
 </manifest>
