@@ -16,7 +16,6 @@
         android:layout_below="@id/time"
         android:padding="10dp"
         android:src="@mipmap/robot" />
-
     <TextView
         android:id="@+id/tv"
         android:layout_width="wrap_content"

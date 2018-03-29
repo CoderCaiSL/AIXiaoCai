@@ -7,9 +7,14 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.view.View;
 
 import com.qmuiteam.qmui.widget.QMUICollapsingTopBarLayout;
+import com.qmuiteam.qmui.widget.QMUITopBar;
 
+import adapter.QDRecyclerViewAdapter;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -21,10 +26,14 @@ import butterknife.ButterKnife;
 public class PlayMusicActivity extends AppCompatActivity {
 
     protected String musicText = "";
-    /*@BindView(R.id.topBar)
-    QMUITopBar topBar;*/
-    @BindView(R.id.topBarLayout)
-    QMUICollapsingTopBarLayout topBarLayout;
+    @BindView(R.id.topbar)
+    QMUITopBar topbar;
+    @BindView(R.id.collapsing_topbar_layout)
+    QMUICollapsingTopBarLayout collapsingTopbarLayout;
+    @BindView(R.id.recyclerView)
+    RecyclerView recyclerView;
+    QDRecyclerViewAdapter mRecyclerViewAdapter;
+    LinearLayoutManager mPagerLayoutManager;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -33,6 +42,11 @@ public class PlayMusicActivity extends AppCompatActivity {
         ButterKnife.bind(this);
         musicText = getIntent().getStringExtra("musicText");
         initView();
+        mPagerLayoutManager = new LinearLayoutManager(PlayMusicActivity.this);
+        recyclerView.setLayoutManager(mPagerLayoutManager);
+        mRecyclerViewAdapter = new QDRecyclerViewAdapter();
+        mRecyclerViewAdapter.setItemCount(10);
+        recyclerView.setAdapter(mRecyclerViewAdapter);
     }
 
     /**
@@ -40,6 +54,13 @@ public class PlayMusicActivity extends AppCompatActivity {
      */
     private void initView() {
         /*topBar.setTitle("音乐播放");*/
+        topbar.addLeftBackImageButton().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
+        collapsingTopbarLayout.setTitle("音乐播放器");
     }
 
     public static void startAction(Context context, String musicText) {

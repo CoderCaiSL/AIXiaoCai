@@ -7,9 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.request.target.GlideDrawableImageViewTarget;
-
 /**
  * Created by csl on 2018/3/3.
  */
@@ -42,8 +39,6 @@ public class ListenDialog extends Dialog{
         }*/
     }
     public void setImgGif(String type){
-        if (type.equals("thinking")){
-            Glide.with(context).load(R.drawable.chat4).into(new GlideDrawableImageViewTarget(imgGif));
-        }
+
     }
 }

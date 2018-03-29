@@ -22,7 +22,7 @@
         android:icon="@mipmap/log"
         android:label="@string/app_name"
         android:supportsRtl="true"
-        android:theme="@style/QMUI.Compat.NoActionBar"
+        android:theme="@style/AppThemeQM"
         android:name=".ui.SimpleTransApplication"
         >
         <!--
