@@ -3,6 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:fitsSystemWindows="true"
+    android:clipToPadding="true"
     >
     <com.qmuiteam.qmui.widget.QMUIAppBarLayout
         android:layout_width="match_parent"
@@ -25,7 +27,7 @@
                 android:contentDescription="示例图片"
                 android:fitsSystemWindows="false"
                 android:scaleType="centerCrop"
-                android:src="@mipmap/qd_show_img_1"
+                android:src="@mipmap/play_music1"
                 app:qmui_layout_collapseMode="parallax"
                 app:qmui_layout_collapseParallaxMultiplier="0.7"/>
 
@@ -38,6 +40,7 @@
                 app:qmui_topbar_bg_color="@color/qmui_config_color_transparent"
                 app:qmui_topbar_need_separator="false"/>
         </com.qmuiteam.qmui.widget.QMUICollapsingTopBarLayout>
+
     </com.qmuiteam.qmui.widget.QMUIAppBarLayout>
     <android.support.v7.widget.RecyclerView
         android:id="@+id/recyclerView"
@@ -45,24 +48,5 @@
         android:layout_height="match_parent"
         android:scrollbars="none"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:scrollbars="none"
-        >
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <DatePicker
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            app:layout_behavior="@string/appbar_scrolling_view_behavior"
-            >
-            </DatePicker>
-
-        </LinearLayout>
-    </ScrollView>
 </android.support.design.widget.CoordinatorLayout>
+

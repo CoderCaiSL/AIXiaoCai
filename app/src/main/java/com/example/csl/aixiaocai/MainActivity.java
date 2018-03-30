@@ -250,7 +250,6 @@ public class MainActivity extends AppCompatActivity implements EventListener {
         txtLog.setText(DESC_TEXT + "\n");
         topBar = (QMUITopBar) findViewById(R.id.topBar);
         topBar.setTitle("智能小菜");
-        topBar.setBackgroundResource(R.color.qmui_config_color_blue);
     }
     /**
      * android 6.0 以上需要动态申请权限
